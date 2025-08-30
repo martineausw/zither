@@ -28,7 +28,7 @@
 
     // Tracks the earliest Zig version that the package considers to be a
     // supported use case.
-    .minimum_zig_version = "0.14.1",
+    .minimum_zig_version = "0.15.1",
 
     // This field is optional.
     // Each dependency must either provide a `url` and `hash`, or a `path`.
@@ -37,8 +37,12 @@
     // internet connectivity.
     .dependencies = .{
         .ziggurat = .{
-            .url = "../ziggurat",
-            .hash = "ziggurat-0.1.0-qXv8IR_2AABnm5bmMmGtBEcvRjdofmQxD-C8uCUrkvaE",
+            .url = "git+https://github.com/martineausw/ziggurat.git?ref=HEAD#20dc59d61cc37bcf234a4ab2fa1c39432df2850d",
+            .hash = "ziggurat-0.0.0-rsRs6Wu4AQAzet5Pnk1o_94nLh8q1NqSyjihfWNN_IKo",
+        },
+        .duct = .{
+            .url = "git+https://github.com/martineausw/duct.git?ref=HEAD#c814bb7fd529aa28a186fd164cf6c1e628aa0a19",
+            .hash = "duct-0.0.0-KCNcwujMAAC5ku75sfmURy7COx_94kxjhB1LcnhiXU8U",
         },
     },
     .paths = .{
@@ -47,6 +51,6 @@
         "src",
         // For example...
         //"LICENSE",
-        //"README.md",
+        "README.md",
     },
 }

@@ -5,41 +5,46 @@ const std = @import("std");
 // runner.
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
+
+    const mod = b.addModule("zither", .{
+        .root_source_file = b.path("src/root.zig"),
+        .target = target,
+    });
 
     const ziggurat = b.dependency("ziggurat", .{
         .target = target,
-        .optimize = optimize,
     });
 
-    const lib_mod = b.createModule(.{
-        .root_source_file = b.path("src/root.zig"),
+    const duct = b.dependency("duct", .{
         .target = target,
-        .optimize = optimize,
     });
 
-    lib_mod.addImport("ziggurat", ziggurat.module("ziggurat"));
+    mod.addImport("ziggurat", ziggurat.module("ziggurat"));
+    mod.addImport("duct", duct.module("duct"));
 
-    const lib = b.addLibrary(.{
-        .linkage = .static,
-        .name = "zither",
-        .root_module = lib_mod,
+    const mod_tests = b.addTest(.{
+        .root_module = mod,
+        .name = "zither test",
     });
 
-    b.installArtifact(lib);
-
-    const lib_unit_tests = b.addTest(.{
-        .root_module = lib_mod,
-    });
-
-    const ziggurat_unit_tests = b.addTest(.{
+    const ziggurat_tests = b.addTest(.{
         .root_module = ziggurat.module("ziggurat"),
     });
 
-    const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
-    const run_ziggurat_unit_tests = b.addRunArtifact(ziggurat_unit_tests);
+    const duct_tests = b.addTest(.{
+        .root_module = duct.module("duct"),
+    });
+
+    const run_mod_tests = b.addRunArtifact(mod_tests);
+    const run_ziggurat_tests = b.addRunArtifact(ziggurat_tests);
+    const run_duct_tests = b.addRunArtifact(duct_tests);
 
     const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_lib_unit_tests.step);
-    test_step.dependOn(&run_ziggurat_unit_tests.step);
+    test_step.dependOn(&run_mod_tests.step);
+
+    const dependecy_test_step = b.step("dependencies", "Run dependency unit tests");
+    dependecy_test_step.dependOn(&run_ziggurat_tests.step);
+    dependecy_test_step.dependOn(&run_duct_tests.step);
+
+    test_step.dependOn(dependecy_test_step);
 }

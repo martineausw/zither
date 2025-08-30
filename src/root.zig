@@ -1,5 +1,6 @@
-const std = @import("std");
-const testing = std.testing;
+pub const Tensor = @import("tensor.zig").Tensor;
+pub const TensorView = @import("tensor_view.zig").TensorView;
 
-const ziggurat = @import("ziggurat");
-const terms = ziggurat.impl.terms;
+test {
+    @import("std").testing.refAllDecls(@This());
+}

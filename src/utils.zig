@@ -1,0 +1,118 @@
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+const ziggurat = @import("ziggurat");
+const duct = @import("duct");
+
+pub fn flatLen(
+    accumulator: usize,
+    element: usize,
+    _: usize,
+    _: []const usize,
+) usize {
+    return accumulator * element;
+}
+
+pub fn flatIndex(
+    strides: anytype,
+    indices: anytype,
+) ziggurat.sign(.seq(&.{
+    .any(&.{
+        .is_array(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_vector(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_pointer(.{
+            .child = .is_int(.{ .signedness = .{ .unsigned = true } }),
+            .size = .{ .slice = true },
+        }),
+    }),
+    .any(&.{
+        .is_array(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_vector(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_pointer(.{
+            .child = .is_int(.{ .signedness = .{ .unsigned = true } }),
+            .size = .{ .slice = true },
+        }),
+    }),
+}))(.{
+    @TypeOf(strides),
+    @TypeOf(indices),
+})(usize) {
+    var result: usize = 0;
+    var index: isize = @intCast(strides.len - 1);
+
+    while (index >= 0) {
+        const idx: usize = @intCast(index);
+        result += duct.get.at(indices, idx) * duct.get.at(strides, idx);
+        index -= 1;
+    }
+
+    return result;
+}
+
+pub const ReshapeError = error{MismatchedLengths};
+
+pub fn initReshape(
+    allocator: Allocator,
+    shape: anytype,
+    new_shape: anytype,
+) ziggurat.sign(.seq(&.{
+    .any(&.{
+        .is_array(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_vector(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_pointer(.{
+            .child = .is_int(.{ .signedness = .{ .unsigned = true } }),
+            .size = .{ .slice = true },
+        }),
+    }),
+    .any(&.{
+        .is_array(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_vector(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+        .is_pointer(.{
+            .child = .is_int(.{ .signedness = .{ .unsigned = true } }),
+            .size = .{ .slice = true },
+        }),
+    }),
+}))(.{
+    @TypeOf(shape),
+    @TypeOf(new_shape),
+})((Allocator.Error || ReshapeError)![]const usize) {
+    const new_shape_rank = duct.get.len(new_shape);
+
+    if (duct.iterate.get.reduce(shape, flatLen) != duct.iterate.get.reduce(new_shape, flatLen))
+        return ReshapeError.MismatchedLengths;
+
+    const result = try allocator.alloc(usize, new_shape_rank);
+
+    for (0..new_shape_rank) |index| {
+        result[index] = duct.get.at(new_shape, index);
+    }
+
+    return result;
+}
+
+pub fn initStrides(
+    allocator: Allocator,
+    shape: anytype,
+) ziggurat.sign(.any(&.{
+    .is_array(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+    .is_vector(.{ .child = .is_int(.{ .signedness = .{ .unsigned = true } }) }),
+    .is_pointer(.{
+        .child = .is_int(.{ .signedness = .{ .unsigned = true } }),
+        .size = .{ .slice = true },
+    }),
+}))(
+    @TypeOf(shape),
+)(Allocator.Error![]usize) {
+    const len = duct.get.len(shape);
+
+    const result = try allocator.alloc(usize, len);
+    var product: usize = 1;
+
+    for (1..len + 1) |i| {
+        const index = len - i;
+        result[index] = product;
+        product *= duct.get.at(shape, index);
+    }
+
+    return result;
+}
