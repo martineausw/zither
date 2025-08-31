@@ -28,7 +28,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             return .{
                 .buffer = try duct.new.zeroes(
                     allocator,
-                    usize,
+                    T,
                     duct.iterate.get.reduce(shape, utils.flatLen),
                 ),
                 .shape = try duct.new.copy(allocator, shape),
