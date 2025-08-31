@@ -1,3 +1,7 @@
 # zither
 
-Library for tensor operations in zig 0.14.1 with Metal interop
+Small tensor library.
+
+Uses [duct](https://github.com/martineausw/duct) for utilities.
+
+Uses [ziggurat](https://github.com/martineausw/ziggurat) for type constraints.
