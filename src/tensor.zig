@@ -1,12 +1,15 @@
 const std = @import("std");
+const meta = std.meta;
 const testing = std.testing;
 const Allocator = std.mem.Allocator;
 
 const ziggurat = @import("ziggurat");
 const duct = @import("duct");
-const utils = @import("utils.zig");
+const set_scalar_ops = duct.iterate.math.scalar.set;
+const set_element_ops = duct.iterate.math.element.set;
 
-const TensorView = @import("tensor_view.zig").TensorView;
+const utils = @import("utils.zig");
+// const TensorView = @import("tensor_view.zig").TensorView;
 
 const tensor_element: ziggurat.Prototype = .any(&.{
     .is_int(.{}),
@@ -29,7 +32,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
                 .buffer = try duct.new.zeroes(
                     allocator,
                     T,
-                    utils.flatLen(shape),
+                    if (shape.len > 0) utils.flatLen(shape) else 1,
                 ),
                 .shape = try duct.new.copy(allocator, shape),
                 .strides = try utils.initStrides(allocator, shape),
@@ -145,31 +148,44 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             end: T,
             step: T,
         ) anyerror!Tensor(T) {
-            const len = try std.math.divFloor(
-                usize,
-                switch (@typeInfo(T)) {
-                    .int => @intCast(end - start),
-                    .float => @intFromFloat(end - start),
-                    else => unreachable,
-                },
-                switch (@typeInfo(T)) {
-                    .int => @intCast(step),
-                    .float => @intFromFloat(step),
-                    else => unreachable,
-                },
-            );
-            const shape = try duct.new.fill(allocator, usize, 1, len);
+            const len = if (end > (start + step))
+                try std.math.divFloor(
+                    usize,
+                    switch (@typeInfo(T)) {
+                        .int => @intCast(end - start),
+                        .float => @intFromFloat(end - start),
+                        else => unreachable,
+                    },
+                    switch (@typeInfo(T)) {
+                        .int => @intCast(step),
+                        .float => @intFromFloat(step),
+                        else => unreachable,
+                    },
+                )
+            else
+                0;
+
+            const buffer = if (len > 0)
+                try duct.new.arange(allocator, T, len, start, step)
+            else
+                try duct.new.fill(allocator, T, 1, start);
+
+            const shape = if (len > 0)
+                try duct.new.fill(allocator, usize, 1, len)
+            else
+                try allocator.alloc(usize, 0);
+
             return .{
-                .buffer = try duct.new.arange(allocator, T, len, start, step),
+                .buffer = buffer,
                 .shape = shape,
                 .strides = try utils.initStrides(allocator, shape),
                 .allocator = allocator,
             };
         }
 
-        pub fn view(self: *const Tensor(T)) Allocator.Error!TensorView(T) {
-            return TensorView(T).from(self);
-        }
+        // pub fn view(self: *const Tensor(T)) Allocator.Error!TensorView(T) {
+        //     return TensorView(T).from(self);
+        // }
 
         pub fn deinit(self: *const Tensor(T)) void {
             self.allocator.free(self.buffer);
@@ -194,11 +210,6 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             value: T,
         ) void {
             self.buffer[utils.flatIndex(self.strides, indices)] = value;
-        }
-
-        pub fn item(self: *const Tensor(T)) ?T {
-            if (self.shape.len == 1 and self.shape[0] == 1) return self.buffer[0];
-            return null;
         }
 
         pub fn flatten(self: *Tensor(T)) Allocator.Error!void {
@@ -279,6 +290,126 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self.allocator.free(self.strides);
             self.strides = @constCast(strides);
         }
+
+        pub fn add(
+            self: *const Tensor(T),
+            tensor: *const Tensor(T),
+        ) !void {
+            if (self.shape != tensor.shape) return error.MismatchedShape;
+            if (self.strides != tensor.strides) return error.MismatchedStrides;
+
+            return try set_element_ops.add(T, &self.buffer, tensor.buffer);
+        }
+
+        pub fn sub(
+            self: *const Tensor(T),
+            tensor: *const Tensor(T),
+        ) !void {
+            if (self.shape != tensor.shape) return error.MismatchedShape;
+            if (self.strides != tensor.strides) return error.MismatchedStrides;
+
+            return try set_element_ops.sub(T, &self.buffer, tensor.buffer);
+        }
+
+        pub fn mul(
+            self: *const Tensor(T),
+            tensor: *const Tensor(T),
+        ) !void {
+            if (self.shape != tensor.shape) return error.MismatchedShape;
+            if (self.strides != tensor.strides) return error.MismatchedStrides;
+
+            return try set_element_ops.mul(T, &self.buffer, tensor.buffer);
+        }
+
+        pub fn div(
+            self: *const Tensor(T),
+            tensor: *const Tensor(T),
+        ) !void {
+            if (self.shape != tensor.shape) return error.MismatchedShape;
+            if (self.strides != tensor.strides) return error.MismatchedStrides;
+
+            return try set_element_ops.div(T, &self.buffer, tensor.buffer);
+        }
+
+        pub fn divFloor(
+            self: *const Tensor(T),
+            tensor: *const Tensor(T),
+        ) !void {
+            if (self.shape != tensor.shape) return error.MismatchedShape;
+            if (self.strides != tensor.strides) return error.MismatchedStrides;
+
+            return try set_element_ops.divFloor(T, &self.buffer, tensor.buffer);
+        }
+
+        pub fn divCeil(
+            self: *const Tensor(T),
+            tensor: T,
+        ) !void {
+            if (self.shape != tensor.shape) return error.MismatchedShape;
+            if (self.strides != tensor.strides) return error.MismatchedStrides;
+
+            return try set_element_ops.divCeil(T, &self.buffer, tensor.buffer);
+        }
+
+        pub fn addScalar(
+            self: *const Tensor(T),
+            scalar: T,
+        ) !void {
+            if (self.shape != scalar.shape) return error.MismatchedShape;
+            if (self.strides != scalar.strides) return error.MismatchedStrides;
+
+            return try set_scalar_ops.add(T, &self.buffer, scalar);
+        }
+
+        pub fn subScalar(
+            self: *const Tensor(T),
+            scalar: T,
+        ) !void {
+            if (self.shape != scalar.shape) return error.MismatchedShape;
+            if (self.strides != scalar.strides) return error.MismatchedStrides;
+
+            return try set_scalar_ops.sub(T, &self.buffer, scalar);
+        }
+
+        pub fn mulScalar(
+            self: *const Tensor(T),
+            scalar: T,
+        ) !void {
+            if (self.shape != scalar.shape) return error.MismatchedShape;
+            if (self.strides != scalar.strides) return error.MismatchedStrides;
+
+            return try set_scalar_ops.mul(T, self.buffer, scalar);
+        }
+
+        pub fn divScalar(
+            self: *const Tensor(T),
+            scalar: T,
+        ) !void {
+            if (self.shape != scalar.shape) return error.MismatchedShape;
+            if (self.strides != scalar.strides) return error.MismatchedStrides;
+
+            return try set_scalar_ops.div(T, &self.buffer, scalar);
+        }
+
+        pub fn divFloorScalar(
+            self: *const Tensor(T),
+            scalar: T,
+        ) !void {
+            if (self.shape != scalar.shape) return error.MismatchedShape;
+            if (self.strides != scalar.strides) return error.MismatchedStrides;
+
+            return try set_scalar_ops.divFloor(T, &self.buffer, scalar);
+        }
+
+        pub fn divCeilScalar(
+            self: *const Tensor(T),
+            scalar: T,
+        ) !void {
+            if (self.shape != scalar.shape) return error.MismatchedShape;
+            if (self.strides != scalar.strides) return error.MismatchedStrides;
+
+            return try set_scalar_ops.divCeil(T, &self.buffer, scalar);
+        }
     };
 }
 
@@ -286,8 +417,8 @@ test {
     var tensor_0 = try Tensor(usize).init(testing.allocator, &.{6});
     defer tensor_0.deinit();
 
-    const tensor_view = try tensor_0.view();
-    tensor_view.deinit();
+    // const tensor_view = try tensor_0.view();
+    // tensor_view.deinit();
 
     for (0..tensor_0.buffer.len) |index| {
         tensor_0.set(&.{index}, index);
@@ -397,4 +528,49 @@ test {
     try testing.expectEqual(3, tensor_0.at(&.{3}));
     try testing.expectEqual(4, tensor_0.at(&.{4}));
     try testing.expectEqual(5, tensor_0.at(&.{5}));
+}
+
+test "scalar" {
+    const empty_shape = try testing.allocator.alloc(usize, 0);
+    defer testing.allocator.free(empty_shape);
+
+    const tensor: Tensor(f32) = try .init(testing.allocator, empty_shape);
+    defer tensor.deinit();
+
+    var tensor_0: Tensor(f32) = try .init(testing.allocator, &.{});
+    defer tensor_0.deinit();
+
+    try testing.expectEqual(1, tensor_0.buffer.len);
+
+    tensor_0.set(&.{}, 0);
+
+    try testing.expectEqual(0, tensor_0.at(&.{}));
+
+    const tensor_1: Tensor(f32) = try .zeroes(testing.allocator, &.{});
+    defer tensor_1.deinit();
+
+    try testing.expectEqual(1, tensor_1.buffer.len);
+
+    try testing.expectEqual(0, tensor_1.at(&.{}));
+
+    const tensor_2: Tensor(f32) = try .ones(testing.allocator, &.{});
+    defer tensor_2.deinit();
+
+    try testing.expectEqual(1, tensor_2.buffer.len);
+
+    try testing.expectEqual(1, tensor_2.at(&.{}));
+
+    const tensor_3: Tensor(f32) = try .full(testing.allocator, &.{}, 2);
+    defer tensor_3.deinit();
+
+    try testing.expectEqual(1, tensor_3.buffer.len);
+
+    try testing.expectEqual(2, tensor_3.at(&.{}));
+
+    const tensor_4: Tensor(f32) = try .arange(testing.allocator, 0, 0, 0);
+    defer tensor_4.deinit();
+
+    try testing.expectEqual(1, tensor_4.buffer.len);
+
+    try testing.expectEqual(0, tensor_4.at(&.{}));
 }

@@ -15,7 +15,6 @@ pub fn flatLenIterate(
 
 pub fn flatLen(shape: anytype) usize {
     if (shape.len == 0) return 1;
-    if (shape.len == 1) return shape[0];
     return duct.iterate.get.reduce(shape, flatLenIterate);
 }
 
@@ -43,13 +42,13 @@ pub fn flatIndex(
     @TypeOf(strides),
     @TypeOf(indices),
 })(usize) {
-    var result: usize = 0;
-    var index: isize = @intCast(strides.len - 1);
+    if (indices.len == 0) return 0;
 
-    while (index >= 0) {
-        const idx: usize = @intCast(index);
-        result += duct.get.at(indices, idx) * duct.get.at(strides, idx);
-        index -= 1;
+    var result: usize = 0;
+
+    for (1..strides.len + 1) |i| {
+        const index = strides.len - i;
+        result += duct.get.at(indices, index) * duct.get.at(strides, index);
     }
 
     return result;
@@ -110,6 +109,12 @@ pub fn initStrides(
     @TypeOf(shape),
 )(Allocator.Error![]usize) {
     const len = duct.get.len(shape);
+
+    if (len == 0) {
+        const result = try allocator.alloc(usize, 1);
+        result[0] = 0;
+        return result;
+    }
 
     const result = try allocator.alloc(usize, len);
     var product: usize = 1;

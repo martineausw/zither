@@ -1,8 +1,8 @@
 const std = @import("std");
 const testing = std.testing;
 const Allocator = std.mem.Allocator;
-const Tensor = @import("tensor.zig").Tensor;
-const utils = @import("utils.zig");
+const Tensor = @import("../tensor.zig").Tensor;
+const utils = @import("../utils.zig");
 const duct = @import("duct");
 
 fn incrementIndices(strides: []const usize, indices: *[]usize, iteration: usize) !void {
@@ -79,7 +79,7 @@ fn createShape(
     return shape;
 }
 
-pub fn contraction(
+pub fn contract(
     allocator: Allocator,
     comptime T: type,
     tensor_0: Tensor(T),
@@ -201,7 +201,7 @@ test "identity" {
     const B: Tensor(f32) = try .arange(testing.allocator, 0, 3, 1);
     defer B.deinit();
 
-    const AA = try contraction(
+    const AA = try contract(
         testing.allocator,
         f32,
         A,
@@ -211,7 +211,7 @@ test "identity" {
     );
     defer AA.deinit();
 
-    const AB = try contraction(
+    const AB = try contract(
         testing.allocator,
         f32,
         A,
@@ -237,7 +237,7 @@ test "matrix" {
 
     try testing.expectEqualSlices(usize, &.{ 3, 3 }, A.shape);
 
-    const AA = try contraction(
+    const AA = try contract(
         testing.allocator,
         f32,
         A,
@@ -260,7 +260,7 @@ test "cube" {
         try testing.expectEqual(1, A.buffer[index]);
     }
 
-    const AA = try contraction(
+    const AA = try contract(
         testing.allocator,
         f32,
         A,
@@ -318,7 +318,7 @@ test "cube arithmetic" {
     AA_expect.set(&.{ 2, 1 }, 2430);
     AA_expect.set(&.{ 2, 2 }, 2565);
 
-    const AA = try contraction(
+    const AA = try contract(
         testing.allocator,
         f128,
         A,

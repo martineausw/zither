@@ -41,8 +41,8 @@
             .hash = "ziggurat-0.0.0-rsRs6Wu4AQAzet5Pnk1o_94nLh8q1NqSyjihfWNN_IKo",
         },
         .duct = .{
-            .url = "git+https://github.com/martineausw/duct.git?ref=HEAD#8f4fcc3f9d5c38107eeb37a32cbcc7a9fd562915",
-            .hash = "duct-0.0.0-KCNcwvvMAADt_sOa5uFNoQihFAICECY-XaAJxVZi0Bec",
+            .url = "git+https://github.com/martineausw/duct.git?ref=HEAD#e759e14a886fdfe7dd017d59a74145735c1dee30",
+            .hash = "duct-0.0.0-KCNcwsoQAQCdCyxIPVYHe8BwT6eZKVV6KdomFs_pQAKq",
         },
     },
     .paths = .{
