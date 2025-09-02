@@ -292,7 +292,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn add(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
             if (self.shape != tensor.shape) return error.MismatchedShape;
@@ -302,7 +302,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn sub(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
             if (self.shape != tensor.shape) return error.MismatchedShape;
@@ -312,7 +312,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn mul(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
             if (self.shape != tensor.shape) return error.MismatchedShape;
@@ -322,7 +322,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn div(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
             if (self.shape != tensor.shape) return error.MismatchedShape;
@@ -332,7 +332,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn divFloor(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
             if (self.shape != tensor.shape) return error.MismatchedShape;
@@ -342,7 +342,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn divCeil(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             tensor: T,
         ) !void {
             if (self.shape != tensor.shape) return error.MismatchedShape;
@@ -352,7 +352,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn addScalar(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             scalar: T,
         ) !void {
             if (self.shape != scalar.shape) return error.MismatchedShape;
@@ -362,7 +362,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn subScalar(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             scalar: T,
         ) !void {
             if (self.shape != scalar.shape) return error.MismatchedShape;
@@ -372,7 +372,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn mulScalar(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             scalar: T,
         ) !void {
             if (self.shape != scalar.shape) return error.MismatchedShape;
@@ -382,7 +382,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn divScalar(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             scalar: T,
         ) !void {
             if (self.shape != scalar.shape) return error.MismatchedShape;
@@ -392,7 +392,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn divFloorScalar(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             scalar: T,
         ) !void {
             if (self.shape != scalar.shape) return error.MismatchedShape;
@@ -402,7 +402,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         }
 
         pub fn divCeilScalar(
-            self: *const Tensor(T),
+            self: *Tensor(T),
             scalar: T,
         ) !void {
             if (self.shape != scalar.shape) return error.MismatchedShape;
