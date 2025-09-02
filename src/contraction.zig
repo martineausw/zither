@@ -184,8 +184,6 @@ fn calculateElement(
 }
 
 test "contraction shape" {
-    testing.log_level = .debug;
-
     const A: Tensor(f32) = try .init(testing.allocator, &.{ 2, 4, 3 });
     defer A.deinit();
     const B: Tensor(f32) = try .init(testing.allocator, &.{ 4, 3, 3 });
@@ -198,7 +196,6 @@ test "contraction shape" {
 }
 
 test "identity" {
-    testing.log_level = .debug;
     const A: Tensor(f32) = try .identity(testing.allocator, 3);
     defer A.deinit();
     const B: Tensor(f32) = try .arange(testing.allocator, 0, 3, 1);
@@ -254,7 +251,6 @@ test "matrix" {
 }
 
 test "cube" {
-    // try testing.expect(false);
     const A: Tensor(f32) = try .ones(testing.allocator, &.{ 3, 3, 3 });
     defer A.deinit();
 
@@ -281,11 +277,8 @@ test "cube" {
 }
 
 test "cube arithmetic" {
-    testing.log_level = .debug;
     var A: Tensor(f128) = try .arange(testing.allocator, 1, 28, 1);
     defer A.deinit();
-
-    std.log.debug("{any}", .{A.buffer});
 
     // Buffer sanity check
     for (0..A.buffer.len) |index| {
