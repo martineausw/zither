@@ -295,7 +295,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
             return set_element_ops.add(T, &self.buffer, tensor.buffer);
         }
 
@@ -303,7 +303,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
             return set_element_ops.sub(T, &self.buffer, tensor.buffer);
         }
 
@@ -311,7 +311,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
             return set_element_ops.mul(T, &self.buffer, tensor.buffer);
         }
 
@@ -319,7 +319,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
             return set_element_ops.div(T, &self.buffer, tensor.buffer);
         }
 
@@ -327,7 +327,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
             return set_element_ops.divFloor(T, &self.buffer, tensor.buffer);
         }
 
@@ -335,7 +335,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: T,
         ) !void {
-            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
             return set_element_ops.divCeil(T, &self.buffer, tensor.buffer);
         }
 
