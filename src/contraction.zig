@@ -108,9 +108,9 @@ pub fn contraction(
     allocator.free(shape);
 
     // Create accessors for operand tensors
-    var indices = try duct.new.zeroes(testing.allocator, usize, tensor.rank());
-    var indices_0 = try duct.new.zeroes(testing.allocator, usize, tensor_0.rank());
-    var indices_1 = try duct.new.zeroes(testing.allocator, usize, tensor_1.rank());
+    var indices = try duct.new.zeroes(allocator, usize, tensor.rank());
+    var indices_0 = try duct.new.zeroes(allocator, usize, tensor_0.rank());
+    var indices_1 = try duct.new.zeroes(allocator, usize, tensor_1.rank());
 
     for (0..utils.flatLen(tensor.shape)) |it| {
         try incrementIndices(
