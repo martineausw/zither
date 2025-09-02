@@ -295,120 +295,90 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (self.shape != tensor.shape) return error.MismatchedShape;
-            if (self.strides != tensor.strides) return error.MismatchedStrides;
-
-            return try set_element_ops.add(T, &self.buffer, tensor.buffer);
+            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            return set_element_ops.add(T, &self.buffer, tensor.buffer);
         }
 
         pub fn sub(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (self.shape != tensor.shape) return error.MismatchedShape;
-            if (self.strides != tensor.strides) return error.MismatchedStrides;
-
-            return try set_element_ops.sub(T, &self.buffer, tensor.buffer);
+            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            return set_element_ops.sub(T, &self.buffer, tensor.buffer);
         }
 
         pub fn mul(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (self.shape != tensor.shape) return error.MismatchedShape;
-            if (self.strides != tensor.strides) return error.MismatchedStrides;
-
-            return try set_element_ops.mul(T, &self.buffer, tensor.buffer);
+            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            return set_element_ops.mul(T, &self.buffer, tensor.buffer);
         }
 
         pub fn div(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (self.shape != tensor.shape) return error.MismatchedShape;
-            if (self.strides != tensor.strides) return error.MismatchedStrides;
-
-            return try set_element_ops.div(T, &self.buffer, tensor.buffer);
+            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            return set_element_ops.div(T, &self.buffer, tensor.buffer);
         }
 
         pub fn divFloor(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (self.shape != tensor.shape) return error.MismatchedShape;
-            if (self.strides != tensor.strides) return error.MismatchedStrides;
-
-            return try set_element_ops.divFloor(T, &self.buffer, tensor.buffer);
+            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            return set_element_ops.divFloor(T, &self.buffer, tensor.buffer);
         }
 
         pub fn divCeil(
             self: *Tensor(T),
             tensor: T,
         ) !void {
-            if (self.shape != tensor.shape) return error.MismatchedShape;
-            if (self.strides != tensor.strides) return error.MismatchedStrides;
-
-            return try set_element_ops.divCeil(T, &self.buffer, tensor.buffer);
+            if (std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
+            return set_element_ops.divCeil(T, &self.buffer, tensor.buffer);
         }
 
         pub fn addScalar(
             self: *Tensor(T),
             scalar: T,
-        ) !void {
-            if (self.shape != scalar.shape) return error.MismatchedShape;
-            if (self.strides != scalar.strides) return error.MismatchedStrides;
-
-            return try set_scalar_ops.add(T, &self.buffer, scalar);
+        ) void {
+            return set_scalar_ops.add(T, &self.buffer, scalar);
         }
 
         pub fn subScalar(
             self: *Tensor(T),
             scalar: T,
-        ) !void {
-            if (self.shape != scalar.shape) return error.MismatchedShape;
-            if (self.strides != scalar.strides) return error.MismatchedStrides;
-
-            return try set_scalar_ops.sub(T, &self.buffer, scalar);
+        ) void {
+            return set_scalar_ops.sub(T, &self.buffer, scalar);
         }
 
         pub fn mulScalar(
             self: *Tensor(T),
             scalar: T,
-        ) !void {
-            if (self.shape != scalar.shape) return error.MismatchedShape;
-            if (self.strides != scalar.strides) return error.MismatchedStrides;
-
-            return try set_scalar_ops.mul(T, self.buffer, scalar);
+        ) void {
+            return set_scalar_ops.mul(T, self.buffer, scalar);
         }
 
         pub fn divScalar(
             self: *Tensor(T),
             scalar: T,
-        ) !void {
-            if (self.shape != scalar.shape) return error.MismatchedShape;
-            if (self.strides != scalar.strides) return error.MismatchedStrides;
-
-            return try set_scalar_ops.div(T, &self.buffer, scalar);
+        ) void {
+            return set_scalar_ops.div(T, &self.buffer, scalar);
         }
 
         pub fn divFloorScalar(
             self: *Tensor(T),
             scalar: T,
-        ) !void {
-            if (self.shape != scalar.shape) return error.MismatchedShape;
-            if (self.strides != scalar.strides) return error.MismatchedStrides;
-
-            return try set_scalar_ops.divFloor(T, &self.buffer, scalar);
+        ) void {
+            return set_scalar_ops.divFloor(T, &self.buffer, scalar);
         }
 
         pub fn divCeilScalar(
             self: *Tensor(T),
             scalar: T,
-        ) !void {
-            if (self.shape != scalar.shape) return error.MismatchedShape;
-            if (self.strides != scalar.strides) return error.MismatchedStrides;
-
-            return try set_scalar_ops.divCeil(T, &self.buffer, scalar);
+        ) void {
+            return set_scalar_ops.divCeil(T, &self.buffer, scalar);
         }
     };
 }
