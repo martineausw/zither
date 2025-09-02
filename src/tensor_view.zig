@@ -52,7 +52,7 @@ pub fn TensorView(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             const shape = utils.initReshape(
                 self.allocator,
                 self.shape,
-                @as([]const usize, &[1]usize{duct.iterate.get.reduce(self.shape, utils.flatLen)}),
+                @as([]const usize, &[1]usize{utils.flatLen(self.shape)}),
             ) catch |err| return switch (err) {
                 Allocator.Error.OutOfMemory => Allocator.Error.OutOfMemory,
                 utils.ReshapeError.MismatchedLengths => unreachable,
@@ -115,6 +115,7 @@ pub fn TensorView(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
 test {
     const tensor = try Tensor(usize).arange(testing.allocator, 0, 6, 1);
     defer tensor.deinit();
+
     var tensor_view = try TensorView(usize).from(&tensor);
     defer tensor_view.deinit();
 

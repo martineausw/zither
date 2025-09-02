@@ -4,13 +4,19 @@ const Allocator = std.mem.Allocator;
 const ziggurat = @import("ziggurat");
 const duct = @import("duct");
 
-pub fn flatLen(
+pub fn flatLenIterate(
     accumulator: usize,
     element: usize,
     _: usize,
     _: []const usize,
 ) usize {
     return accumulator * element;
+}
+
+pub fn flatLen(shape: anytype) usize {
+    if (shape.len == 0) return 1;
+    if (shape.len == 1) return shape[0];
+    return duct.iterate.get.reduce(shape, flatLenIterate);
 }
 
 pub fn flatIndex(
@@ -78,7 +84,7 @@ pub fn initReshape(
 })((Allocator.Error || ReshapeError)![]const usize) {
     const new_shape_rank = duct.get.len(new_shape);
 
-    if (duct.iterate.get.reduce(shape, flatLen) != duct.iterate.get.reduce(new_shape, flatLen))
+    if (flatLen(shape) != flatLen(new_shape))
         return ReshapeError.MismatchedLengths;
 
     const result = try allocator.alloc(usize, new_shape_rank);

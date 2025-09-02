@@ -29,7 +29,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
                 .buffer = try duct.new.zeroes(
                     allocator,
                     T,
-                    duct.iterate.get.reduce(shape, utils.flatLen),
+                    utils.flatLen(shape),
                 ),
                 .shape = try duct.new.copy(allocator, shape),
                 .strides = try utils.initStrides(allocator, shape),
@@ -41,7 +41,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             allocator: Allocator,
             n: usize,
         ) Allocator.Error!Tensor(T) {
-            const buffer = try allocator.alloc(usize, n * n);
+            const buffer = try allocator.alloc(T, n * n);
             for (0..buffer.len) |index| {
                 buffer[index] = 0;
             }
@@ -89,7 +89,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
                 .buffer = try duct.new.fill(
                     allocator,
                     T,
-                    duct.iterate.get.reduce(shape, utils.flatLen),
+                    utils.flatLen(shape),
                     value,
                 ),
                 .shape = try duct.new.copy(allocator, shape),
@@ -115,7 +115,10 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
 
             const range = max - min;
 
-            const buffer = try allocator.alloc(T, duct.iterate.get.reduce(shape, utils.flatLen));
+            const buffer = try allocator.alloc(
+                T,
+                utils.flatLen(shape),
+            );
 
             for (0..buffer.len) |index| {
                 const value = rand.float(rand_type);
@@ -144,10 +147,18 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         ) anyerror!Tensor(T) {
             const len = try std.math.divFloor(
                 usize,
-                end - start,
-                step,
+                switch (@typeInfo(T)) {
+                    .int => @intCast(end - start),
+                    .float => @intFromFloat(end - start),
+                    else => unreachable,
+                },
+                switch (@typeInfo(T)) {
+                    .int => @intCast(step),
+                    .float => @intFromFloat(step),
+                    else => unreachable,
+                },
             );
-            const shape = try duct.new.fill(allocator, T, 1, len);
+            const shape = try duct.new.fill(allocator, usize, 1, len);
             return .{
                 .buffer = try duct.new.arange(allocator, T, len, start, step),
                 .shape = shape,
@@ -194,7 +205,9 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             const shape = utils.initReshape(
                 self.allocator,
                 self.shape,
-                @as([]const usize, &[1]usize{duct.iterate.get.reduce(self.shape, utils.flatLen)}),
+                @as([]const usize, &[1]usize{
+                    utils.flatLen(self.shape),
+                }),
             ) catch |err| return switch (err) {
                 utils.ReshapeError.MismatchedLengths => unreachable,
                 Allocator.Error.OutOfMemory => return Allocator.Error.OutOfMemory,
