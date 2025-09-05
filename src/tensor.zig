@@ -295,14 +295,14 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
 
         pub fn add(
             self: *Tensor(T),
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
         ) !void {
             elm(T).mul(self, tensor);
         }
 
         pub fn sub(
             self: *Tensor(T),
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
         ) !void {
             elm(T).mul(self, tensor);
         }
@@ -323,14 +323,14 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
 
         pub fn divFloor(
             self: *Tensor(T),
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
         ) !void {
             elm(T).divFloor(self, tensor);
         }
 
         pub fn divCeil(
             self: *Tensor(T),
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
         ) !void {
             elm(T).divCeil(self, tensor);
         }
