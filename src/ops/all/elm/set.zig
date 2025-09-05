@@ -43,7 +43,7 @@ pub fn set(comptime T: type) type {
             map(
                 dest,
                 aux,
-                duct.all.ops.elm_func(T, []T, []T).sub,
+                duct.all.ops.elm_func(T, []const T, []const T).sub,
             );
         }
 
@@ -52,9 +52,9 @@ pub fn set(comptime T: type) type {
             aux: Tensor(T),
         ) void {
             map(
-                dest.*,
+                dest,
                 aux,
-                duct.all.ops.elm_func(T, []T, []T).mul,
+                duct.all.ops.elm_func(T, []const T, []const T).mul,
             );
         }
 
@@ -65,7 +65,7 @@ pub fn set(comptime T: type) type {
             map(
                 dest.*,
                 aux,
-                duct.all.ops.elm_func(T, []T, []T).div,
+                duct.all.ops.elm_func(T, []const T, []const T).div,
             );
         }
 
@@ -76,7 +76,7 @@ pub fn set(comptime T: type) type {
             map(
                 dest.*,
                 aux,
-                duct.all.ops.elm.elm_func(T, []T, []T).divFloor,
+                duct.all.ops.elm.elm_func(T, []const T, []const T).divFloor,
             );
         }
 
@@ -87,7 +87,7 @@ pub fn set(comptime T: type) type {
             map(
                 dest.*,
                 aux,
-                duct.all.ops.elm_func(T, []T, []T).divCeil,
+                duct.all.ops.elm_func(T, []const T, []const T).divCeil,
             );
         }
     };
