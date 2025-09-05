@@ -1,6 +1,6 @@
 const duct = @import("duct");
 
-const Tensor = @import("../../tensor.zig");
+const Tensor = @import("../../tensor.zig").Tensor;
 const root_utils = @import("../../utils.zig");
 
 pub fn set(comptime T: type) type {
