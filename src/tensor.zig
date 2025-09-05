@@ -214,20 +214,32 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self.buffer[utils.flatIndex(self.strides, indices)] = value;
         }
 
-        pub fn flatten(self: *Tensor(T)) Allocator.Error!void {
+        pub fn flatten(self: *Tensor(T), start: usize, end: usize) Allocator.Error!void {
+            const new_shape = try std.mem.concat(
+                self.allocator,
+                usize,
+                &.{
+                    if (start > 0) self.shape[0..start] else @as([]const usize, &[0]usize{}),
+                    @as([]const usize, &[1]usize(utils.flatLen(self.shape[start..end]))),
+                    if (end < self.shape.len) self.shape[end..] else @as([]const usize, &[0]usize{}),
+                },
+            );
+            defer self.allocator.free(new_shape);
+
             const shape = utils.initReshape(
                 self.allocator,
                 self.shape,
-                @as([]const usize, &[1]usize{
-                    utils.flatLen(self.shape),
-                }),
+                new_shape,
             ) catch |err| return switch (err) {
                 utils.ReshapeError.MismatchedLengths => unreachable,
                 Allocator.Error.OutOfMemory => return Allocator.Error.OutOfMemory,
             };
+
             const strides = try utils.initStrides(self.allocator, shape);
+
             self.allocator.free(self.shape);
             self.allocator.free(self.strides);
+
             self.shape = @constCast(shape);
             self.strides = @constCast(strides);
         }
@@ -297,7 +309,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: Tensor(T),
         ) !void {
-            elm(T).mul(self, tensor);
+            elm(T).add(self, tensor);
         }
 
         pub fn sub(
