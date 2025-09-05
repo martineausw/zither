@@ -19,7 +19,7 @@ pub fn set(comptime T: type) type {
             ) T,
         ) void {
             duct.all.ops.elm.set(T).map(
-                dest.*.buffer,
+                &dest.*.buffer,
                 aux.buffer,
                 func,
             );
