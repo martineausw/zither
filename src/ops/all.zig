@@ -7,7 +7,7 @@ const root_utils = @import("../utils.zig");
 
 pub fn forEach(
     comptime T: type,
-    tensor: *Tensor(T),
+    tensor: Tensor(T),
     func: *const fn (element: T, index: usize, tensor: *const Tensor(T)) void,
 ) void {
     duct.all.forEach(tensor.*.buffer, func);
@@ -15,7 +15,7 @@ pub fn forEach(
 
 pub fn some(
     comptime T: type,
-    tensor: *Tensor(T),
+    tensor: Tensor(T),
     func: *const fn (element: T, index: usize, tensor: *const Tensor(T)) bool,
 ) bool {
     duct.all.some(tensor.*.buffer, func);
@@ -23,7 +23,7 @@ pub fn some(
 
 pub fn every(
     comptime T: type,
-    tensor: *Tensor(T),
+    tensor: Tensor(T),
     func: *const fn (element: T, index: usize, tensor: *const Tensor(T)) bool,
 ) bool {
     duct.all.every(tensor.*.buffer, func);

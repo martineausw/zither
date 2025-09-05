@@ -11,7 +11,7 @@ pub fn set(comptime T: type) type {
     return struct {
         pub fn map(
             dest: *Tensor(T),
-            aux: *const Tensor(T),
+            aux: Tensor(T),
             func: *const fn (
                 elements: struct { T, T },
                 index: usize,
@@ -29,7 +29,7 @@ pub fn set(comptime T: type) type {
 
         pub fn add(
             dest: *Tensor(T),
-            aux: *const Tensor(T),
+            aux: Tensor(T),
         ) void {
             map(
                 dest,
@@ -40,7 +40,7 @@ pub fn set(comptime T: type) type {
 
         pub fn sub(
             dest: *Tensor(T),
-            aux: *const Tensor(T),
+            aux: Tensor(T),
         ) void {
             map(
                 dest,
@@ -50,8 +50,8 @@ pub fn set(comptime T: type) type {
         }
 
         pub fn mul(
-            dest: *const Tensor(T),
-            aux: *const Tensor(T),
+            dest: *Tensor(T),
+            aux: Tensor(T),
         ) void {
             map(
                 T,
@@ -62,8 +62,8 @@ pub fn set(comptime T: type) type {
         }
 
         pub fn div(
-            dest: *const Tensor(T),
-            aux: *const Tensor(T),
+            dest: *Tensor(T),
+            aux: Tensor(T),
         ) void {
             map(
                 T,
@@ -74,8 +74,8 @@ pub fn set(comptime T: type) type {
         }
 
         pub fn divFloor(
-            dest: *const Tensor(T),
-            aux: *const Tensor(T),
+            dest: *Tensor(T),
+            aux: Tensor(T),
         ) void {
             map(
                 T,
@@ -86,8 +86,8 @@ pub fn set(comptime T: type) type {
         }
 
         pub fn divCeil(
-            dest: *const Tensor(T),
-            aux: *const Tensor(T),
+            dest: *Tensor(T),
+            aux: Tensor(T),
         ) void {
             map(
                 dest,

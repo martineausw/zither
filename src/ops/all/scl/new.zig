@@ -11,7 +11,7 @@ pub fn new(comptime T: type) type {
     return struct {
         pub fn map(
             allocator: Allocator,
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
             scalar: T,
             func: *const fn (
                 scalar: T,
@@ -37,7 +37,7 @@ pub fn new(comptime T: type) type {
 
         pub fn add(
             allocator: Allocator,
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
             scalar: T,
         ) !Tensor(T) {
             return map(
@@ -50,7 +50,7 @@ pub fn new(comptime T: type) type {
 
         pub fn sub(
             allocator: Allocator,
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
             scalar: T,
         ) !Tensor(T) {
             return map(
@@ -63,7 +63,7 @@ pub fn new(comptime T: type) type {
 
         pub fn mul(
             allocator: Allocator,
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
             scalar: T,
         ) !Tensor(T) {
             return map(
@@ -76,7 +76,7 @@ pub fn new(comptime T: type) type {
 
         pub fn div(
             allocator: Allocator,
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
             scalar: T,
         ) !Tensor(T) {
             return map(
@@ -89,7 +89,7 @@ pub fn new(comptime T: type) type {
 
         pub fn divFloor(
             allocator: Allocator,
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
             scalar: T,
         ) !Tensor(T) {
             return map(
@@ -102,7 +102,7 @@ pub fn new(comptime T: type) type {
 
         pub fn divCeil(
             allocator: Allocator,
-            tensor: *const Tensor(T),
+            tensor: Tensor(T),
             scalar: T,
         ) !Tensor(T) {
             return map(
