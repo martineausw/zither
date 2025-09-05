@@ -381,14 +381,14 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             axes: []const usize,
         ) !void {
-            reduce(T).sum(self, axes);
+            try reduce(T).sum(self, axes);
         }
 
         pub fn product(
             self: *Tensor(T),
             axes: []const usize,
         ) !void {
-            reduce(T).product(self, axes);
+            try reduce(T).product(self, axes);
         }
 
         pub fn tensordot(
@@ -397,7 +397,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             aux: Tensor(T),
             aux_axes: []const usize,
         ) !void {
-            contract.set(T).tensordot(
+            try contract(T).tensordot(
                 self,
                 axes,
                 aux,
