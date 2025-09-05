@@ -54,6 +54,19 @@ pub fn flatIndex(
     return result;
 }
 
+pub fn dimIndex(allocator: Allocator, strides: []const usize, index: usize) ![]const usize {
+    var result = try duct.new.zeroes(allocator, usize, strides.len);
+    var value = index;
+    var dim: usize = 0;
+
+    while (dim < strides.len) : (dim += 1) {
+        result[dim] = try std.math.divFloor(usize, value, strides[dim]);
+        value -= result[dim] * strides[dim];
+    }
+
+    return result;
+}
+
 pub const ReshapeError = error{MismatchedLengths};
 
 pub fn initReshape(

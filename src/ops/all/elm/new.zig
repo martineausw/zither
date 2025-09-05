@@ -29,7 +29,7 @@ pub fn new(comptime T: type) type {
 
             return .{
                 .buffer = buffer,
-                .shape = tensor_0.shape,
+                .shape = try duct.new.copy(allocator, tensor_0.shape),
                 .strides = try root_utils.initStrides(allocator, tensor_0.shape),
                 .allocator = allocator,
             };
