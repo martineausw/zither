@@ -9,7 +9,6 @@ const set_scalar_ops = duct.iterate.math.scalar.set;
 const set_element_ops = duct.iterate.math.element.set;
 
 const utils = @import("utils.zig");
-// const TensorView = @import("tensor_view.zig").TensorView;
 
 const tensor_element: ziggurat.Prototype = .any(&.{
     .is_int(.{}),
@@ -91,7 +90,6 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             return .{
                 .buffer = try duct.new.fill(
                     allocator,
-                    T,
                     utils.flatLen(shape),
                     value,
                 ),
@@ -166,12 +164,12 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
                 0;
 
             const buffer = if (len > 0)
-                try duct.new.arange(allocator, T, len, start, step)
+                try duct.new.arange(allocator, len, start, step)
             else
-                try duct.new.fill(allocator, T, 1, start);
+                try duct.new.fill(allocator, 1, start);
 
             const shape = if (len > 0)
-                try duct.new.fill(allocator, usize, 1, len)
+                try duct.new.fill(allocator, 1, len)
             else
                 try allocator.alloc(usize, 0);
 

@@ -1,6 +1,5 @@
-pub const contract = @import("ops/contract.zig").contract;
-pub const each = @import("ops/each.zig");
-pub const reduce = @import("ops/reduce.zig");
+pub const all = @import("ops/new.zig");
+pub const new = @import("ops/all.zig");
 
 test {
     @import("std").testing.refAllDecls(@This());

@@ -15,7 +15,7 @@ pub fn flatLenIterate(
 
 pub fn flatLen(shape: anytype) usize {
     if (shape.len == 0) return 1;
-    return duct.iterate.get.reduce(shape, flatLenIterate);
+    return duct.all.get.reduce(shape, flatLenIterate);
 }
 
 pub fn flatIndex(
