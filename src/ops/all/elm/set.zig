@@ -52,7 +52,6 @@ pub fn set(comptime T: type) type {
             aux: Tensor(T),
         ) void {
             map(
-                T,
                 dest.*,
                 aux,
                 duct.all.ops.elm_func(T, []T, []T).mul,
@@ -64,7 +63,6 @@ pub fn set(comptime T: type) type {
             aux: Tensor(T),
         ) void {
             map(
-                T,
                 dest.*,
                 aux,
                 duct.all.ops.elm_func(T, []T, []T).div,
@@ -76,7 +74,6 @@ pub fn set(comptime T: type) type {
             aux: Tensor(T),
         ) void {
             map(
-                T,
                 dest.*,
                 aux,
                 duct.all.ops.elm.elm_func(T, []T, []T).divFloor,
