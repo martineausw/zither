@@ -1,5 +1,5 @@
-pub const new = @import("all/new.zig");
-pub const set = @import("all/set.zig");
+pub const elm = @import("all/elm.zig");
+pub const scl = @import("all/scl.zig");
 
 test {
     @import("std").testing.refAllDecls(@This());

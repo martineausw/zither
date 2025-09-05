@@ -3,8 +3,9 @@ const testing = std.testing;
 const Allocator = std.mem.Allocator;
 
 const duct = @import("duct");
-const Tensor = @import("../../tensor.zig").Tensor;
-const utils = @import("../../utils.zig");
+
+const Tensor = @import("../../../tensor.zig").Tensor;
+const root_utils = @import("../../../utils.zig");
 
 pub fn set(comptime T: type) type {
     return struct {
@@ -19,7 +20,7 @@ pub fn set(comptime T: type) type {
         ) void {
             if (dest.*.shape != aux.*.shape) return error.MismatchedShape;
 
-            duct.all.ops.elm.set.map(
+            duct.all.ops.elm.set(T).map(
                 &dest.*.buffer,
                 aux.*.buffer,
                 func,

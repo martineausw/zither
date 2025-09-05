@@ -1,10 +1,10 @@
 const std = @import("std");
-const testing = std.testing;
 const Allocator = std.mem.Allocator;
 
 const duct = @import("duct");
-const Tensor = @import("../../tensor.zig").Tensor;
-const utils = @import("../../utils.zig");
+
+const Tensor = @import("../../../tensor.zig");
+const root_utils = @import("../../../utils.zig");
 
 pub fn new(comptime T: type) type {
     return struct {
@@ -22,7 +22,6 @@ pub fn new(comptime T: type) type {
 
             const buffer = try duct.all.ops.elm.new(T).map(
                 allocator,
-                T,
                 tensor_0.buffer,
                 tensor_1.buffer,
                 func,
@@ -31,7 +30,7 @@ pub fn new(comptime T: type) type {
             return .{
                 .buffer = buffer,
                 .shape = tensor_0.shape,
-                .strides = try utils.initStrides(allocator, tensor_0.shape),
+                .strides = try root_utils.initStrides(allocator, tensor_0.shape),
                 .allocator = allocator,
             };
         }

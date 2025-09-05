@@ -51,9 +51,9 @@ pub fn set(comptime T: type) type {
                     axes,
                 );
 
-                new_tensor.set(new_indices, ops_utils.calculateElement(
+                new_tensor.set(new_indices, ops_utils.reduce(T).calculateElement(
                     initial,
-                    tensor,
+                    tensor.*,
                     axes,
                     &indices,
                     func,
@@ -75,11 +75,11 @@ pub fn set(comptime T: type) type {
             tensor: *Tensor(T),
             axes: []const usize,
         ) !void {
-            reduce(
+            try reduce(
                 0,
                 tensor,
                 axes,
-                ops_utils.reduce_func(T).sum,
+                ops_utils.reduce(T).sum,
             );
         }
 
@@ -87,11 +87,11 @@ pub fn set(comptime T: type) type {
             tensor: *Tensor(T),
             axes: []const usize,
         ) !void {
-            return reduce(
+            try reduce(
                 1,
                 tensor,
                 axes,
-                ops_utils.reduce_func(T).product,
+                ops_utils.reduce(T).product,
             );
         }
     };
@@ -109,9 +109,9 @@ test "sum reduction" {
     try B.reshape(&.{ 3, 3 });
     try C.reshape(&.{ 3, 3 });
 
-    try set(f32).sum(testing.allocator, &A, &.{1});
-    try set(f32).sum(testing.allocator, &B, &.{0});
-    try set(f32).sum(testing.allocator, &C, &.{ 0, 1 });
+    try set(f32).sum(&A, &.{1});
+    try set(f32).sum(&B, &.{0});
+    try set(f32).sum(&C, &.{ 0, 1 });
 
     try testing.expectEqualSlices(usize, &.{3}, A.shape);
     try testing.expectEqualSlices(f32, &.{ 6, 15, 24 }, A.buffer);

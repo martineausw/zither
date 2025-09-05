@@ -52,7 +52,7 @@ pub fn new(comptime T: type) type {
                     axes,
                 );
 
-                new_tensor.set(new_indices, ops_utils.calculateElement(
+                new_tensor.set(new_indices, ops_utils.reduce(T).calculateElement(
                     initial,
                     tensor,
                     axes,

@@ -8,6 +8,10 @@ const duct = @import("duct");
 const set_scalar_ops = duct.iterate.math.scalar.set;
 const set_element_ops = duct.iterate.math.element.set;
 
+const scl = @import("ops/all/scl/set.zig").set;
+const elm = @import("ops/all/elm/set.zig").set;
+const contract = @import("ops/contract/set.zig").set;
+const reduce = @import("ops/reduce/set.zig").set;
 const utils = @import("utils.zig");
 
 const tensor_element: ziggurat.Prototype = .any(&.{
@@ -37,6 +41,12 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
                 .strides = try utils.initStrides(allocator, shape),
                 .allocator = allocator,
             };
+        }
+
+        pub fn deinit(self: *const Tensor(T)) void {
+            self.allocator.free(self.buffer);
+            self.allocator.free(self.shape);
+            self.allocator.free(self.strides);
         }
 
         pub fn identity(
@@ -185,12 +195,6 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
         //     return TensorView(T).from(self);
         // }
 
-        pub fn deinit(self: *const Tensor(T)) void {
-            self.allocator.free(self.buffer);
-            self.allocator.free(self.shape);
-            self.allocator.free(self.strides);
-        }
-
         pub fn rank(self: *const Tensor(T)) usize {
             return self.shape.len;
         }
@@ -293,90 +297,112 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
-            return set_element_ops.add(T, &self.buffer, tensor.buffer);
+            elm(T).mul(self, tensor);
         }
 
         pub fn sub(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
-            return set_element_ops.sub(T, &self.buffer, tensor.buffer);
+            elm(T).mul(self, tensor);
         }
 
         pub fn mul(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
-            return set_element_ops.mul(T, &self.buffer, tensor.buffer);
+            elm(T).mul(self, tensor);
         }
 
         pub fn div(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
-            return set_element_ops.div(T, &self.buffer, tensor.buffer);
+            elm(T).div(self, tensor);
         }
 
         pub fn divFloor(
             self: *Tensor(T),
             tensor: *const Tensor(T),
         ) !void {
-            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
-            return set_element_ops.divFloor(T, &self.buffer, tensor.buffer);
+            elm(T).divFloor(self, tensor);
         }
 
         pub fn divCeil(
             self: *Tensor(T),
-            tensor: T,
+            tensor: *const Tensor(T),
         ) !void {
-            if (!std.mem.eql(usize, self.shape, tensor.shape)) return error.MismatchedShape;
-            return set_element_ops.divCeil(T, &self.buffer, tensor.buffer);
+            elm(T).divCeil(self, tensor);
         }
 
         pub fn addScalar(
             self: *Tensor(T),
             scalar: T,
         ) void {
-            return set_scalar_ops.add(T, &self.buffer, scalar);
+            scl(T).add(self, scalar);
         }
 
         pub fn subScalar(
             self: *Tensor(T),
             scalar: T,
         ) void {
-            return set_scalar_ops.sub(T, &self.buffer, scalar);
+            scl(T).sub(self, scalar);
         }
 
         pub fn mulScalar(
             self: *Tensor(T),
             scalar: T,
         ) void {
-            return set_scalar_ops.mul(T, self.buffer, scalar);
+            scl(T).mul(self, scalar);
         }
 
         pub fn divScalar(
             self: *Tensor(T),
             scalar: T,
         ) void {
-            return set_scalar_ops.div(T, &self.buffer, scalar);
+            scl(T).div(self, scalar);
         }
 
         pub fn divFloorScalar(
             self: *Tensor(T),
             scalar: T,
         ) void {
-            return set_scalar_ops.divFloor(T, &self.buffer, scalar);
+            scl(T).divFloor(self, scalar);
         }
 
         pub fn divCeilScalar(
             self: *Tensor(T),
             scalar: T,
         ) void {
-            return set_scalar_ops.divCeil(T, &self.buffer, scalar);
+            scl(T).divCeil(self, scalar);
+        }
+
+        pub fn sum(
+            self: *Tensor(T),
+            axes: []const usize,
+        ) !void {
+            reduce(T).sum(self, axes);
+        }
+
+        pub fn product(
+            self: *Tensor(T),
+            axes: []const usize,
+        ) !void {
+            reduce(T).product(self, axes);
+        }
+
+        pub fn tensordot(
+            self: *Tensor(T),
+            axes: []const usize,
+            aux: Tensor(T),
+            aux_axes: []const usize,
+        ) !void {
+            contract.set(T).tensordot(
+                self,
+                axes,
+                aux,
+                aux_axes,
+            );
         }
     };
 }

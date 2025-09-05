@@ -66,7 +66,7 @@ pub fn set(comptime T: type) type {
                 tensor.set(indices, ops_utils.contract(T).calculateElement(
                     func,
                     initial_value,
-                    dest,
+                    dest.*,
                     dest_axes,
                     &indices_0,
                     aux,
@@ -85,8 +85,6 @@ pub fn set(comptime T: type) type {
             dest.*.buffer = tensor.buffer;
             dest.*.strides = tensor.strides;
             dest.*.shape = tensor.shape;
-
-            return tensor;
         }
 
         pub fn tensordot(
@@ -95,7 +93,7 @@ pub fn set(comptime T: type) type {
             aux: Tensor(T),
             aux_axes: []const usize,
         ) !void {
-            contract(
+            try contract(
                 dest,
                 dest_axes,
                 aux,
@@ -108,13 +106,13 @@ pub fn set(comptime T: type) type {
 }
 
 test "identity" {
-    const A_0: Tensor(f32) = try .identity(testing.allocator, 3);
+    var A_0: Tensor(f32) = try .identity(testing.allocator, 3);
     defer A_0.deinit();
 
-    const A_1: Tensor(f32) = try .identity(testing.allocator, 3);
+    var A_1: Tensor(f32) = try .identity(testing.allocator, 3);
     defer A_1.deinit();
 
-    const B: Tensor(f32) = try .arange(testing.allocator, 0, 3, 1);
+    var B: Tensor(f32) = try .arange(testing.allocator, 0, 3, 1);
     defer B.deinit();
 
     try set(f32).tensordot(
@@ -153,7 +151,7 @@ test "matrix" {
 }
 
 test "cube" {
-    const A: Tensor(f32) = try .ones(testing.allocator, &.{ 3, 3, 3 });
+    var A: Tensor(f32) = try .ones(testing.allocator, &.{ 3, 3, 3 });
     defer A.deinit();
 
     try set(f32).tensordot(
