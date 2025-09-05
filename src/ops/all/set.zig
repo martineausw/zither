@@ -7,7 +7,7 @@ pub fn set(comptime T: type) type {
     return struct {
         pub fn map(
             tensor: *Tensor(T),
-            func: *const fn (element: T, index: usize, tensor: *const Tensor(T)) T,
+            func: *const fn (element: T, index: usize, tensor: []const T) T,
         ) void {
             duct.all.set.map(&tensor.*.buffer, func);
         }

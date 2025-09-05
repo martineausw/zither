@@ -9,7 +9,7 @@ pub fn new(comptime T: type) type {
         pub fn map(
             allocator: Allocator,
             tensor: Tensor(T),
-            func: *const fn (element: T, index: usize, tensor: *const Tensor(T)) T,
+            func: *const fn (element: T, index: usize, tensor: []const T) T,
         ) !Tensor(T) {
             return .{
                 .buffer = try duct.all.new.map(allocator, tensor.buffer, func),
