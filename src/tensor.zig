@@ -220,7 +220,7 @@ pub fn Tensor(comptime T: type) ziggurat.sign(tensor_element)(T)(type) {
                 usize,
                 &.{
                     if (start > 0) self.shape[0..start] else @as([]const usize, &[0]usize{}),
-                    @as([]const usize, &[1]usize(utils.flatLen(self.shape[start..end]))),
+                    @as([]const usize, &[1]usize{utils.flatLen(self.shape[start..end])}),
                     if (end < self.shape.len) self.shape[end..] else @as([]const usize, &[0]usize{}),
                 },
             );
@@ -523,7 +523,7 @@ test {
     try testing.expectEqual(4, tensor_0.at(&.{ 0, 0, 2 }));
     try testing.expectEqual(5, tensor_0.at(&.{ 0, 1, 2 }));
 
-    try tensor_0.flatten();
+    try tensor_0.flatten(0, tensor_0.rank());
 
     try testing.expectEqualSlices(usize, &.{6}, tensor_0.shape);
     try testing.expectEqualSlices(usize, &.{1}, tensor_0.strides);
