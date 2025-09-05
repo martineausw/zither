@@ -34,7 +34,7 @@ pub fn set(comptime T: type) type {
             map(
                 dest,
                 aux,
-                duct.all.ops.elm_func(T, []T, []T).add,
+                duct.all.ops.elm_func(T, []const T, []const T).add,
             );
         }
 
