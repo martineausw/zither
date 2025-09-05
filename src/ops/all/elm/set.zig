@@ -18,8 +18,6 @@ pub fn set(comptime T: type) type {
                 data: struct { []const T, []const T },
             ) T,
         ) void {
-            if (dest.*.shape != aux.shape) return error.MismatchedShape;
-
             duct.all.ops.elm.set(T).map(
                 dest.*.buffer,
                 aux.buffer,
