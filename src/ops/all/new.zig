@@ -13,8 +13,8 @@ pub fn new(comptime T: type) type {
         ) !Tensor(T) {
             return .{
                 .buffer = try duct.all.new.map(allocator, tensor.buffer, func),
-                .shape = duct.new.copy(allocator, tensor.shape),
-                .strides = duct.new.copy(allocator, tensor.strides),
+                .shape = try duct.new.copy(allocator, tensor.shape),
+                .strides = try duct.new.copy(allocator, tensor.strides),
                 .allocator = allocator,
             };
         }
