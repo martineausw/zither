@@ -1,113 +1,15 @@
-test {
-    @import("std").testing.refAllDecls(@This());
-}
-
 const std = @import("std");
 const testing = std.testing;
 const Allocator = std.mem.Allocator;
-const Tensor = @import("../../tensor.zig").Tensor;
-const utils = @import("../../utils.zig");
+
 const duct = @import("duct");
 
-fn incrementIndices(strides: []const usize, indices: *[]usize, iteration: usize) !void {
-    var value = iteration;
-
-    for (0..indices.len) |index| {
-        indices.*[index] = @intCast(@divFloor(value, strides[index]));
-        value -= strides[index] * @divFloor(value, strides[index]);
-    }
-}
-
-fn mapAccessorIndices(
-    indices: []const usize,
-    indices_0: *[]usize,
-    axes_0: []const usize,
-) void {
-    var index: usize = 0;
-
-    // Splice tensor accessor indices from output_indices
-    for (0..indices_0.*.len) |index_0| {
-        if (duct.get.indexOf(axes_0, index_0)) |_| continue;
-        indices_0.*[index_0] = indices[index];
-        index += 1;
-    }
-}
-
-fn createShape(
-    allocator: Allocator,
-    shape: []const usize,
-    axes: []const usize,
-) Allocator.Error![]const usize {
-    const len = (shape.len - axes.len);
-
-    const new_shape = try allocator.alloc(
-        usize,
-        len,
-    );
-
-    var dim: usize = 0;
-    var index_0: usize = 0;
-    for (0..shape.len) |dim_0| {
-        if (index_0 < axes.len and dim_0 == axes[index_0]) {
-            index_0 += 1;
-            continue;
-        }
-        new_shape[dim] = shape[dim_0];
-        dim += 1;
-    }
-
-    return new_shape;
-}
+const Tensor = @import("../../tensor.zig").Tensor;
+const base_utils = @import("../../utils.zig");
+const ops_utils = @import("../utils.zig");
 
 pub fn new(comptime T: type) type {
     return struct {
-        fn calculateElement(
-            initial: T,
-            tensor: Tensor(T),
-            axes: []const usize,
-            indices: *[]usize,
-            func: *const fn (
-                accumulator: T,
-                element: T,
-                indices: []const usize,
-                tensor: *const Tensor(T),
-            ) T,
-            depth: usize,
-        ) T {
-            var result: T = initial;
-            if (depth == axes.len - 1) {
-                for (0..tensor.shape[axes[depth]]) |dim| {
-                    indices.*[axes[depth]] = dim;
-                    result = func(
-                        result,
-                        tensor.at(indices.*),
-                        indices.*,
-                        &tensor,
-                    );
-                }
-            } else {
-                for (0..tensor.shape[axes[depth]]) |dim| {
-                    indices.*[axes[depth]] = dim;
-
-                    result = func(
-                        result,
-                        calculateElement(
-                            initial,
-                            tensor,
-                            axes,
-                            indices,
-                            func,
-                            depth + 1,
-                        ),
-                        indices.*,
-                        &tensor,
-                    );
-                }
-            }
-
-            return result;
-        }
-
         pub fn reduce(
             allocator: Allocator,
             initial: T,
@@ -122,7 +24,7 @@ pub fn new(comptime T: type) type {
         ) !Tensor(T) {
 
             // Create valid shape for output tensor
-            const shape = try createShape(
+            const shape = try ops_utils.reduce(T).createShape(
                 allocator,
                 tensor.shape,
                 axes,
@@ -137,20 +39,20 @@ pub fn new(comptime T: type) type {
             var new_indices = try duct.new.zeroes(allocator, usize, new_tensor.rank());
             var indices = try duct.new.zeroes(allocator, usize, tensor.rank());
 
-            for (0..utils.flatLen(new_tensor.shape)) |it| {
-                try incrementIndices(
+            for (0..base_utils.flatLen(new_tensor.shape)) |it| {
+                try ops_utils.incrementIndices(
                     new_tensor.strides,
                     &new_indices,
                     it,
                 );
 
-                mapAccessorIndices(
+                ops_utils.reduce(T).mapAccessorIndices(
                     new_indices,
                     &indices,
                     axes,
                 );
 
-                new_tensor.set(new_indices, calculateElement(
+                new_tensor.set(new_indices, ops_utils.calculateElement(
                     initial,
                     tensor,
                     axes,
@@ -166,24 +68,6 @@ pub fn new(comptime T: type) type {
             return new_tensor;
         }
 
-        fn sumReduction(
-            accumulator: T,
-            element: T,
-            _: []const usize,
-            _: *const Tensor(T),
-        ) T {
-            return accumulator + element;
-        }
-
-        fn productReduction(
-            accumulator: T,
-            element: T,
-            _: []const usize,
-            _: *const Tensor(T),
-        ) T {
-            return accumulator * element;
-        }
-
         pub fn sum(
             allocator: Allocator,
             tensor: Tensor(T),
@@ -194,7 +78,7 @@ pub fn new(comptime T: type) type {
                 0,
                 tensor,
                 axes,
-                sumReduction,
+                ops_utils.reduce(T).sum,
             );
         }
 
@@ -208,7 +92,7 @@ pub fn new(comptime T: type) type {
                 1,
                 tensor,
                 axes,
-                productReduction,
+                ops_utils.reduce(T).product,
             );
         }
     };

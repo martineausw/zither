@@ -6,100 +6,93 @@ const duct = @import("duct");
 const Tensor = @import("../../tensor.zig").Tensor;
 const utils = @import("../../utils.zig");
 
-pub fn map(
-    comptime T: type,
-    dest: *Tensor(T),
-    aux: *const Tensor(T),
-    func: *const fn (
-        elements: struct { T, T },
-        index: usize,
-        data: struct { []const T, []const T },
-    ) T,
-) void {
-    if (dest.*.shape != aux.*.shape) return error.MismatchedShape;
+pub fn set(comptime T: type) type {
+    return struct {
+        pub fn map(
+            dest: *Tensor(T),
+            aux: *const Tensor(T),
+            func: *const fn (
+                elements: struct { T, T },
+                index: usize,
+                data: struct { []const T, []const T },
+            ) T,
+        ) void {
+            if (dest.*.shape != aux.*.shape) return error.MismatchedShape;
 
-    duct.all.ops.elm.set.map(
-        T,
-        &dest.*.buffer,
-        aux.*.buffer,
-        func,
-    );
-}
+            duct.all.ops.elm.set.map(
+                &dest.*.buffer,
+                aux.*.buffer,
+                func,
+            );
+        }
 
-pub fn add(
-    comptime T: type,
-    dest: *Tensor(T),
-    aux: *const Tensor(T),
-) void {
-    map(
-        T,
-        dest,
-        aux,
-        duct.all.ops.elm.Element(T, Tensor(T), Tensor(T)).add,
-    );
-}
+        pub fn add(
+            dest: *Tensor(T),
+            aux: *const Tensor(T),
+        ) void {
+            map(
+                dest,
+                aux,
+                duct.all.ops.elm_func(T, Tensor(T), Tensor(T)).add,
+            );
+        }
 
-pub fn sub(
-    comptime T: type,
-    dest: *Tensor(T),
-    aux: *const Tensor(T),
-) void {
-    map(
-        T,
-        dest,
-        aux,
-        duct.all.ops.elm.Element(T, Tensor(T), Tensor(T)).sub,
-    );
-}
+        pub fn sub(
+            dest: *Tensor(T),
+            aux: *const Tensor(T),
+        ) void {
+            map(
+                dest,
+                aux,
+                duct.all.ops.elm_func(T, Tensor(T), Tensor(T)).sub,
+            );
+        }
 
-pub fn mul(
-    comptime T: type,
-    dest: *const Tensor(T),
-    aux: *const Tensor(T),
-) void {
-    map(
-        T,
-        dest,
-        aux,
-        duct.all.ops.elm.Element(T, Tensor(T), Tensor(T)).mul,
-    );
-}
+        pub fn mul(
+            dest: *const Tensor(T),
+            aux: *const Tensor(T),
+        ) void {
+            map(
+                T,
+                dest,
+                aux,
+                duct.all.ops.elm_func(T, Tensor(T), Tensor(T)).mul,
+            );
+        }
 
-pub fn div(
-    comptime T: type,
-    dest: *const Tensor(T),
-    aux: *const Tensor(T),
-) void {
-    map(
-        T,
-        dest,
-        aux,
-        duct.all.ops.elm.Element(T, Tensor(T), Tensor(T)).div,
-    );
-}
+        pub fn div(
+            dest: *const Tensor(T),
+            aux: *const Tensor(T),
+        ) void {
+            map(
+                T,
+                dest,
+                aux,
+                duct.all.ops.elm.elm_func(T, Tensor(T), Tensor(T)).div,
+            );
+        }
 
-pub fn divFloor(
-    comptime T: type,
-    dest: *const Tensor(T),
-    aux: *const Tensor(T),
-) void {
-    map(
-        T,
-        dest,
-        aux,
-        duct.all.ops.elm.Element(T, Tensor(T), Tensor(T)).divFloor,
-    );
-}
+        pub fn divFloor(
+            dest: *const Tensor(T),
+            aux: *const Tensor(T),
+        ) void {
+            map(
+                T,
+                dest,
+                aux,
+                duct.all.ops.elm.elm_func(T, Tensor(T), Tensor(T)).divFloor,
+            );
+        }
 
-pub fn divCeil(
-    comptime T: type,
-    dest: *const Tensor(T),
-    aux: *const Tensor(T),
-) void {
-    map(
-        T,
-        dest,
-        aux,
-        duct.all.ops.elm.Element(T, Tensor(T), Tensor(T)).divCeil,
-    );
+        pub fn divCeil(
+            dest: *const Tensor(T),
+            aux: *const Tensor(T),
+        ) void {
+            map(
+                dest,
+                aux,
+                duct.all.ops.elm_func(T, Tensor(T), Tensor(T)).divCeil,
+            );
+        }
+    };
 }

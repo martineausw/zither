@@ -1,83 +1,12 @@
 const std = @import("std");
 const testing = std.testing;
 const Allocator = std.mem.Allocator;
-const Tensor = @import("../../tensor.zig").Tensor;
-const utils = @import("../../utils.zig");
+
 const duct = @import("duct");
 
-fn incrementIndices(strides: []const usize, indices: *[]usize, iteration: usize) !void {
-    var value = iteration;
-
-    for (0..indices.len) |index| {
-        indices.*[index] = @intCast(@divFloor(value, strides[index]));
-        value -= strides[index] * @divFloor(value, strides[index]);
-    }
-}
-
-fn mapAccessorIndices(
-    indices: []const usize,
-    indices_0: *[]usize,
-    axes_0: []const usize,
-    indices_1: *[]usize,
-    axes_1: []const usize,
-) void {
-    var index: usize = 0;
-
-    // Splice tensor accessor indices from output_indices
-    for (0..indices_0.*.len) |index_0| {
-        if (duct.get.indexOf(axes_0, index_0)) |_| continue;
-        indices_0.*[index_0] = indices[index];
-        index += 1;
-    }
-
-    // Splice tensor accessor indices from output_indices
-    for (0..indices_1.*.len) |index_1| {
-        if (duct.get.indexOf(axes_1, index_1)) |_| continue;
-        indices_1.*[index_1] = indices[index];
-        index += 1;
-    }
-}
-
-fn createShape(
-    allocator: Allocator,
-    shape_0: []const usize,
-    axes_0: []const usize,
-    shape_1: []const usize,
-    axes_1: []const usize,
-) Allocator.Error![]const usize {
-    const len = (shape_0.len - axes_0.len) + (shape_1.len - axes_1.len);
-
-    const shape = try allocator.alloc(
-        usize,
-        if (len == 0) 1 else len,
-    );
-
-    var dim: usize = 0;
-    var index_0: usize = 0;
-    for (0..shape_0.len) |dim_0| {
-        if (index_0 < axes_0.len and dim_0 == axes_0[index_0]) {
-            index_0 += 1;
-            continue;
-        }
-        shape[dim] = shape_0[dim_0];
-        dim += 1;
-    }
-
-    var index_1: usize = 0;
-    for (0..shape_1.len) |dim_1| {
-        if (index_1 < axes_1.len and dim_1 == axes_1[index_1]) {
-            index_1 += 1;
-            continue;
-        }
-
-        if (dim < shape.len) {
-            shape[dim] = shape_1[dim_1];
-            dim += 1;
-        }
-    }
-
-    return shape;
-}
+const Tensor = @import("../../tensor.zig").Tensor;
+const root_utils = @import("../../utils.zig");
+const ops_utils = @import("../utils.zig");
 
 pub fn new(comptime T: type) type {
     return struct {
@@ -102,7 +31,7 @@ pub fn new(comptime T: type) type {
             }
 
             // Create valid shape for output tensor
-            const shape = try createShape(
+            const shape = try ops_utils.contract(T).createShape(
                 allocator,
                 tensor_0.shape,
                 axes_0,
@@ -120,14 +49,14 @@ pub fn new(comptime T: type) type {
             var indices_0 = try duct.new.zeroes(allocator, usize, tensor_0.rank());
             var indices_1 = try duct.new.zeroes(allocator, usize, tensor_1.rank());
 
-            for (0..utils.flatLen(tensor.shape)) |it| {
-                try incrementIndices(
+            for (0..root_utils.flatLen(tensor.shape)) |it| {
+                try ops_utils.incrementIndices(
                     tensor.strides,
                     &indices,
                     it,
                 );
 
-                mapAccessorIndices(
+                ops_utils.contract(T).mapAccessorIndices(
                     indices,
                     &indices_0,
                     axes_0,
@@ -135,7 +64,7 @@ pub fn new(comptime T: type) type {
                     axes_1,
                 );
 
-                tensor.set(indices, calculateElement(
+                tensor.set(indices, ops_utils.contract(T).calculateElement(
                     func,
                     initial_value,
                     tensor_0,
@@ -155,72 +84,6 @@ pub fn new(comptime T: type) type {
             return tensor;
         }
 
-        fn calculateElement(
-            func: *const fn (
-                accumulator: T,
-                elements: struct { T, T },
-                indices: struct { []const usize, []const usize },
-                tensors: struct { *const Tensor(T), *const Tensor(T) },
-            ) T,
-            initial_value: T,
-            tensor_0: Tensor(T),
-            axes_0: []const usize,
-            indices_0: *[]usize,
-            tensor_1: Tensor(T),
-            axes_1: []const usize,
-            indices_1: *[]usize,
-            depth: usize,
-        ) T {
-            var result: T = initial_value;
-            if (depth == axes_0.len - 1) {
-                for (0..tensor_0.shape[axes_0[depth]]) |dim| {
-                    indices_0.*[axes_0[depth]] = dim;
-                    indices_1.*[axes_1[depth]] = dim;
-                    result = func(
-                        result,
-                        .{ tensor_0.at(indices_0.*), tensor_1.at(indices_1.*) },
-                        .{ indices_0.*, indices_1.* },
-                        .{ &tensor_0, &tensor_1 },
-                    );
-                }
-            } else {
-                for (0..tensor_0.shape[axes_0[depth]]) |dim| {
-                    indices_0.*[axes_0[depth]] = dim;
-                    indices_1.*[axes_1[depth]] = dim;
-                    result = func(
-                        result,
-                        .{
-                            calculateElement(
-                                func,
-                                initial_value,
-                                tensor_0,
-                                axes_0,
-                                indices_0,
-                                tensor_1,
-                                axes_1,
-                                indices_1,
-                                depth + 1,
-                            ),
-                            1,
-                        },
-                        .{ indices_0.*, indices_1.* },
-                        .{ &tensor_0, &tensor_1 },
-                    );
-                }
-            }
-
-            return result;
-        }
-
-        fn tensordotContract(
-            accumulator: T,
-            elements: struct { T, T },
-            _: struct { []const usize, []const usize },
-            _: struct { *const Tensor(T), *const Tensor(T) },
-        ) T {
-            return accumulator + elements.@"0" * elements.@"1";
-        }
-
         pub fn tensordot(
             allocator: Allocator,
             tensor_0: Tensor(T),
@@ -234,7 +97,7 @@ pub fn new(comptime T: type) type {
                 axes_0,
                 tensor_1,
                 axes_1,
-                tensordotContract,
+                ops_utils.contract(T).tensordot,
                 0,
             );
         }
