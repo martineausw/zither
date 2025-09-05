@@ -1,6 +1,8 @@
 const duct = @import("duct");
 pub const elm = @import("all/elm.zig");
 pub const scl = @import("all/scl.zig");
+pub const new = @import("all/new.zig").new;
+pub const set = @import("all/set.zig").set;
 
 const Tensor = @import("../tensor.zig").Tensor;
 const root_utils = @import("../utils.zig");
